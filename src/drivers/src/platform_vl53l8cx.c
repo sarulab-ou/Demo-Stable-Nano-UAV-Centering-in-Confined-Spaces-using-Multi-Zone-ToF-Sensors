@@ -36,8 +36,8 @@ void init_IO()
 {
     // Spi.format(8, 3);
     // Spi.frequency(2500000);
-    CS0 = DECK_GPIO_TX1;
-    CS1 = DECK_GPIO_IO1;
+    CS0 = DECK_GPIO_IO1;
+    CS1 = DECK_GPIO_TX2;
     CS2 = DECK_GPIO_IO2;
     pinMode(CS0, OUTPUT);
     pinMode(CS1, OUTPUT);
@@ -261,7 +261,32 @@ uint8_t VL53L8CX_RdMulti(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress,
     return status;
 }
 
+// 呼び出しもとでspiBeginTransaction/EndTransactionで囲むこと
+// VL53L8CX_RdMultiと同じ結果を、1バイトずつではなくchunk単位のDMA転送で読み出す
+uint8_t VL53L8CX_RdBulk(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress, uint8_t *p_values, uint32_t size)
+{
+    uint32_t offset = 0;
+    unsigned char rD;
+    static const uint8_t dummy[0x100] = {0};
+    uint8_t status = 0;
+    const uint32_t CHUNK_SIZE = 0x100;
 
+    uint8_t read_addr_high = (uint8_t)((RegisterAdress >> 8) & 0x7F);
+    uint8_t read_addr_low = (uint8_t)(RegisterAdress & 0xFF);
+    Sel_Dev(p_platform->address);
+    cs_low(CS1);
+    spiExchange(1, &read_addr_high, &rD);
+    spiExchange(1, &read_addr_low, &rD);
+
+    while (offset < size)
+    {
+        uint32_t chunk_len = (size - offset) > CHUNK_SIZE ? CHUNK_SIZE : (size - offset);
+        spiExchange(chunk_len, dummy, &p_values[offset]);
+        offset += chunk_len;
+    }
+    cs_high(CS1);
+    return status;
+}
 
 uint8_t VL53L8CX_Reset_Sensor(VL53L8CX_Platform *p_platform)
 {

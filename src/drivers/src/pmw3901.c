@@ -237,7 +237,7 @@ bool pmw3901Init(const deckPin_t csPin)
   uint8_t invChipId = registerRead(csPin, 0x5f);
 
   // DEBUG_PRINT("Motion chip id: 0x%x:0x%x\n", chipId, invChipId);
-  bit_debug(chipId);
+  // bit_debug(chipId);
   // bit_debug(invChipId);
   if (chipId == 0x49 && invChipId == 0xB6)
   {

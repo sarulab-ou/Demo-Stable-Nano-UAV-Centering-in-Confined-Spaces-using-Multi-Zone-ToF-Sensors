@@ -103,6 +103,8 @@ uint8_t VL53L8CX_RdMulti(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress,
 uint8_t VL53L8CX_RdMulti_chunk(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress, uint8_t *p_values,
                                uint32_t size);
 
+uint8_t VL53L8CX_RdBulk(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress, uint8_t *p_values, uint32_t size);
+
 /**
  * @brief Mandatory function used to write multiples bytes.
  * @param (VL53L8CX_Platform*) p_platform : Pointer of VL53L8CX platform

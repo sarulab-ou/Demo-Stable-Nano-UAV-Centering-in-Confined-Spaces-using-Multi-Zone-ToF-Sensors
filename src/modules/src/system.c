@@ -106,6 +106,7 @@ static StaticSemaphore_t vl53l8cxGetTofDoneSemBuffer;
 
 /* Private functions */
 static void systemTask(void *arg);
+
 void vl53l8cx_get_tof_task(void *arg);
 
 /* Public functions */
@@ -188,7 +189,7 @@ int Ranging_Basic_init(uint16_t DevAddr, VL53L8CX_Configuration* Dev)
         led_debug(3000, 6, LED_BLUE_L);
         return 0;
     }else{
-        led_debug(100, (DevAddr+1) * 10, LED_GREEN_L);
+        // led_debug(100, (DevAddr+1) * 10, LED_GREEN_L);
         return 1;
     }
 }
@@ -286,7 +287,7 @@ void vl53l8cx_get_tof_task(void *param){
     xSemaphoreGive(vl53l8cxGetTofDoneSem);
     // 正確に10Hzで回すため、処理時間を吸収する vTaskDelayUntil を使う
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);  // 10Hz
+    const TickType_t xPeriod = pdMS_TO_TICKS(400);  // 10Hz
 
     systemWaitStart();
 
@@ -412,7 +413,7 @@ void systemTask(void *arg)
   if (deckTest() == false) {
     pass = false;
     DEBUG_PRINT("deck [FAIL]\n");
-    led_debug(2000, 2, LED_BLUE_L);
+    // led_debug(2000, 2, LED_BLUE_L);
   }
   if (soundTest() == false) {
     pass = false;
@@ -554,6 +555,8 @@ void vApplicationIdleHook( void )
   static uint32_t tickOfLatestWatchdogReset = M2T(0);
 
   portTickType tickCount = xTaskGetTickCount();
+
+  sysLoadIdleHook();
 
   if (tickCount - tickOfLatestWatchdogReset > M2T(WATCHDOG_RESET_PERIOD_MS))
   {

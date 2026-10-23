@@ -82,9 +82,10 @@
  * and waits for it to succeed before takeoff, and disarms after landing.
  *
  * Ranges must NEVER be read over a live radio LogConfig for the vl53l8cx
- * deck (watchdog-reboot risk) -- this app only touches the up sensor via
- * logGetFloat() (reads the live firmware log table directly, not radio)
- * for its hand trigger, and the uSD logger records the full fan.
+ * deck (watchdog-reboot risk) -- this app reads the up sensor straight
+ * from vl53l8cxToFAvg[] (no radio, no log table, so it works even if the
+ * vl53l8cx log group is removed) for its hand trigger, and the uSD logger
+ * records the full fan.
  *
  * Trigger: set param `chamber.start` = 1 (radio/USB), or hold a hand
  * within `chamber.handMm` of the up-facing sensor (vl53l8cx.s8) for
@@ -144,7 +145,7 @@ static uint8_t startMission = 0;
 
 /* Hover height above the takeoff point. 0.25 m = centre of a 50 cm box. */
 static float takeoffHeight = 0.25f;   /* m */
-static float hoverTimeS    = 10.0f;   /* s, hover duration */
+static float hoverTimeS    = 30.0f;   /* s, hover duration */
 
 /* Time to keep all props at idle (armed, zero thrust) before takeoff. */
 static float armDwellS = 3.0f;
@@ -574,7 +575,6 @@ void appMain(void)
   logVarId_t idZ = logGetVarId("stateEstimate", "z");
   logVarId_t idYaw = logGetVarId("stabilizer", "yaw");
   logVarId_t idIsTumbled = logGetVarId("sys", "isTumbled");
-  logVarId_t idUp = logGetVarId("vl53l8cx", "s8");  /* up sensor, hand trigger */
 
   /* Deck / uSD / estimator params */
   paramVarId_t idPositioningDeck = paramGetVarId("deck", "bcFlow2");
@@ -617,7 +617,7 @@ void appMain(void)
     float estZ = logGetFloat(idZ);
     float yawDeg = logGetFloat(idYaw);
     uint8_t isTumbled = logGetUint(idIsTumbled);
-    float upMm = logGetFloat(idUp);
+    float upMm = vl53l8cxToFAvg[8];  /* up sensor, hand trigger */
 
     estXLog = estX;
     estYLog = estY;

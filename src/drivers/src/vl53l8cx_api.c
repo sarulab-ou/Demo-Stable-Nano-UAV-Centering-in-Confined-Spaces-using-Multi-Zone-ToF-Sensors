@@ -318,16 +318,13 @@ uint8_t vl53l8cx_init(VL53L8CX_Configuration *p_dev)
     status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x01);
 
     /* Download FW into VL53L8CX (page 0x09) */
-    // DEBUG_PRINT("09\n");
     status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x09);
     status |= VL53L8CX_WrBulk(&(p_dev->platform), 0, (uint8_t *)&VL53L8CX_FIRMWARE[0], 0x8000);
     /* page 0x0a */
-    // DEBUG_PRINT("0a\n");
     status |= VL53L8CX_WaitMs_spi_pause(&(p_dev->platform), 10);
     status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x0a);
     status |= VL53L8CX_WrBulk(&(p_dev->platform), 0, (uint8_t *)&VL53L8CX_FIRMWARE[0x8000], 0x8000);
     /* page 0x0b */
-    // DEBUG_PRINT("0b\n");
     status |= VL53L8CX_WaitMs_spi_pause(&(p_dev->platform), 10);
     status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x0b);
     status |= VL53L8CX_WrBulk(&(p_dev->platform), 0, (uint8_t *)&VL53L8CX_FIRMWARE[0x10000], 0x5000);
@@ -738,7 +735,7 @@ uint8_t vl53l8cx_get_ranging_data(VL53L8CX_Configuration *p_dev, VL53L8CX_Result
     union Block_header *bh_ptr;
     uint32_t i, j, msize;
 
-    status |= VL53L8CX_RdMulti(&(p_dev->platform), 0x0, p_dev->temp_buffer, p_dev->data_read_size);
+    status |= VL53L8CX_RdBulk(&(p_dev->platform), 0x0, p_dev->temp_buffer, p_dev->data_read_size);
     p_dev->streamcount = p_dev->temp_buffer[0];
     VL53L8CX_SwapBuffer(p_dev->temp_buffer, (uint16_t)p_dev->data_read_size);
     p_results->platform.address = p_dev->platform.address;
